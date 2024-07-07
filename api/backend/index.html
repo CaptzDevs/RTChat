@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    ::-webkit-scrollbar {
+        width: 10px;
+        background: #000;
+
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgb(117, 117, 117);
+    }
+
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+
+    }
+
+    body {
+        background: #242323;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+
+    }
+
+    main {
+        min-width: 500px;
+        height: 400px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid white;
+    }
+
+    .form-chat {
+        max-width: 500px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-direction: column;
+        gap: 20px;
+
+    }
+
+    textarea {
+        width: 100%;
+        font-size: 1rem;
+        padding: 5px 10px;
+    }
+
+    .chat-body {
+        width: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .chat-message {
+        width: 100%;
+        padding: 10px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .chat-message-other {
+        width: 100%;
+        padding: 10px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .message-box {
+        width: fit-content;
+        max-width: 300px;
+        background: #424242;
+        padding: 10px 15px;
+        border-radius: 30px;
+        color: white;
+        word-wrap: break-word;
+
+    }
+
+    .chat-footer {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .chat-footer button {
+        height: 100%;
+    }
+</style>
+
+<body>
+    <main>
+        <div class="form-chat" id="form-chat">
+            <div class="chat-body" id="chat_body">
+            </div>
+            <div class="chat-footer">
+                <textarea name="" id="chat-input"></textarea>
+                <button id="btn-send-msg"> Send </button>
+            </div>
+        </div>
+    </main>
+</body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.3.1/socket.io.min.js"></script>
+
+    
+<script>
+
+
+    const socket = io('http://localhost:3000/');
+    
+    socket.on('connect', () => {
+        console.log('Connected to server',socket.id);
+        
+        createMessageOther('Connected to server : '+socket.id)
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+    });
+
+
+    socket.on('recieve_message', (data) => {
+        console.log('Received response from server:', data);
+        createMessageOther(data.data)
+        scrollToBottom()
+    });
+
+    $("#btn-send-msg").click((e) => {
+        e.preventDefault();
+
+        let value = $("#chat-input").val();
+    
+
+    })
+
+    $("#chat-input").keyup(e => {
+        if (e.keyCode === 13) {
+            let value = e.target.value
+            sendMessage(value)
+        }
+    })
+
+    function sendMessage(value){
+        socket.emit('sendMessage', { data: value });
+        createMessage(value);
+        clearMessage()
+        scrollToBottom()
+    }
+
+    function createMessage(msg) {
+        if (msg.length > 1) {
+
+            $('#chat_body').append(`
+            <div class="chat-message">
+                <div class="message-box">
+                    ${msg}
+                    </div>
+                    </div>
+                    `)
+        }
+    }
+
+    function createMessageOther(msg) {
+        if (msg.length > 1) {
+
+            $('#chat_body').append(`
+            <div class="chat-message-other">
+                <div class="message-box">
+                    ${msg}
+                    </div>
+                    </div>
+                    `)
+        }
+    }
+
+    function clearMessage() {
+        $("#chat-input").val('')
+    }
+
+    function scrollToBottom() {
+        $('#chat_body')[0].scrollTo(0, $('#chat_body')[0].scrollHeight)
+    }
+
+</script>
+
+</html>
